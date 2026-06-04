@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Loop Is Coming Apart — jj, crabbox, and the unbundled dev cycle</title>
-<meta name="description" content="jj, crabbox, and a field guide to CI caching are three unrelated projects arguing for the same future: the edit-save-run loop is unbundling, and the diff is becoming the thing that moves." />
+<title>The Loop Is Coming Apart — jj, Crabbox, Depot, Blacksmith and the unbundled dev cycle</title>
+<meta name="description" content="A quiet contest over the inner dev loop. jj, Crabbox, Depot, and Blacksmith all make the same promise: zero distance between changing code and knowing if it works, on compute that isn't yours. The diff is the unit of work, and it's mobile." />
 <meta property="og:title" content="The Loop Is Coming Apart" />
-<meta property="og:description" content="jj, crabbox, and CI caching point at the same future: the dev loop is unbundling and the diff is the unit that moves." />
+<meta property="og:description" content="jj, Crabbox, Depot, Blacksmith — the dev loop is unbundling, and the diff is the unit that moves." />
 <meta property="og:type" content="article" />
+<meta name="theme-color" content="#0c0d10" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -15,7 +16,7 @@
   :root{
     --bg:#0c0d10; --bg2:#121419; --ink:#e8e6e0; --dim:#9a978f;
     --line:#23262e; --accent:#ff7a45; --accent2:#5ad1c7; --code:#10131a;
-    --maxw:720px;
+    --maxw:728px;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -27,7 +28,6 @@
   ::selection{background:var(--accent);color:#0c0d10}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
-  /* progress bar */
   #bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--accent);z-index:50;transition:width .08s linear}
 
   header.hero{
@@ -45,7 +45,7 @@
     font-size:clamp(38px,7vw,62px);line-height:1.04;font-weight:600;
     letter-spacing:-.02em;margin:0 0 22px;
   }
-  .dek{font-size:21px;color:var(--dim);font-style:italic;max-width:38ch;margin:0 0 30px;line-height:1.5}
+  .dek{font-size:21px;color:var(--dim);font-style:italic;max-width:42ch;margin:0 0 30px;line-height:1.5}
   .byline{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--dim);letter-spacing:.04em}
   .byline a{color:var(--accent2);text-decoration:none}
   .byline a:hover{text-decoration:underline}
@@ -73,13 +73,13 @@
     font-size:14.5px;line-height:1.7;
   }
   pre code{background:none;border:none;color:#d6d3cc;padding:0;font-size:14.5px}
-  pre .c{color:#6f7682}     /* comment */
-  pre .k{color:var(--accent)}/* command */
+  pre .c{color:#6f7682}
+  pre .k{color:var(--accent)}
 
-  table{width:100%;border-collapse:collapse;margin:0 0 28px;font-size:15.5px;
+  table{width:100%;border-collapse:collapse;margin:0 0 28px;font-size:14.5px;
     font-family:"JetBrains Mono",monospace;}
-  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
-  thead th{color:var(--accent2);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{color:var(--accent2);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:500}
   tbody td:first-child{color:#fff;font-weight:500;white-space:nowrap}
   tbody tr:hover{background:rgba(255,255,255,.018)}
 
@@ -110,63 +110,65 @@
   <div class="wrap">
     <p class="kicker"><span class="dot"></span> Field Notes · The Dev Cycle</p>
     <h1>The Loop Is&nbsp;Coming Apart</h1>
-    <p class="dek">jj, crabbox, and a field guide to CI caching are three unrelated projects. They are quietly arguing for the same future.</p>
-    <p class="byline">By Yossi Eliaz · <a href="https://islo.dev">ISLO</a> · June 2026</p>
+    <p class="dek">jj, Crabbox, Depot, Blacksmith — a quiet contest over the inner dev loop. Every player makes the same promise: zero distance between changing your code and knowing if it works, on compute that isn't yours and isn't precious.</p>
+    <p class="byline">By Yossi Eliaz · <a href="https://islo.dev">islo.dev</a> · June 2026</p>
   </div>
 </header>
 
 <article>
   <div class="wrap">
     <p>For about fifty years the inner dev loop has been one thing happening in one place. You edit a file. You save it. You build and run it. All on the machine under your hands, against a checkout that lives on its disk. Git made the <em>history</em> distributed in 2005, but the loop itself never left the laptop.</p>
+    <p>A cluster of recent projects is prying it apart — a version control system, a remote-execution control plane, two CI acceleration companies, and a field guide that refuses to pick a winner. None of them set out to do the same thing. Put them side by side and they are all making the same promise.</p>
 
-    <p>Three recent projects disagree, each from a different corner, none of them talking to the others. Put them side by side and a shape appears.</p>
+    <h2>The promise</h2>
+    <p>Strip the marketing off any of these tools and the same sentence is underneath: <strong>the speed of your feedback should not depend on the machine under your hands.</strong></p>
+    <p>Every diff should get a warm, isolated, fast machine on demand. The gap between "I changed something" and "I know if it works" should collapse toward zero — and it should collapse on compute that is disposable, so a bad run costs nothing and a parallel run costs nothing more. That's the promise. It is genuinely new. And the moment you take it seriously, the loop has to come apart, because no single laptop can be simultaneously your editor, a fleet of fresh runners, and a warm cache the size of your whole dependency graph.</p>
+    <p>The interesting part is <em>where</em> the promise is being fought over, and <em>what keeps breaking</em> when you try to keep it.</p>
 
-    <h2>jj: the working copy stops being special</h2>
-    <p><a href="https://github.com/jj-vcs/jj">Jujutsu</a> (<code>jj</code>) is a version control system that speaks Git's storage format but throws out Git's mental model. The headline feature sounds like a footnote: <strong>there is no staging area, and your working copy is itself a commit.</strong></p>
-    <p>In Git, your uncommitted edits are a special, fragile, un-addressable state. They live in the index and the worktree, outside the object graph, and half of Git's complexity exists to shuttle them in and out — <code>add</code>, <code>stash</code>, <code>reset --soft</code>, the difference between <code>--mixed</code> and <code>--hard</code>. In jj, the moment you save a file, that change <em>is</em> a commit. It has an ID. It is part of the graph. <code>jj</code> snapshots the working copy on every command.</p>
-    <p>That sounds like a quality-of-life tweak. It is actually a change in what a "diff" <em>is</em>. In Git, the dirty checkout is a verb — a thing in motion that you have to freeze before you can do anything with it. In jj, the dirty checkout is a noun: a first-class, addressable, syncable object that exists whether or not you've decided you're "done."</p>
-    <p>Hold that thought.</p>
+    <h2>The venue: GitHub Actions, and the cache nobody could see</h2>
+    <p>The contest is happening in CI/CD, because that's where the loop already half-left the laptop. <a href="https://github.com/features/actions">GitHub Actions</a> is the incumbent venue; <a href="https://docs.gitlab.com/ee/ci/">GitLab CI/CD</a> is the other big one. This is the arena. And the contested ground inside it turns out to be the most boring-sounding thing imaginable: <strong>the cache.</strong></p>
+    <p>Here is the detail that gives the whole game away. Two different companies — <a href="https://depot.dev">Depot</a> and <a href="https://www.blacksmith.sh">Blacksmith</a> — independently <strong>reverse-engineered the GitHub Actions cache protocol</strong>, and each wrote a blog post about it with nearly the same title. Depot's: <em>"We reverse-engineered the GitHub Actions cache so you don't have to."</em> Blacksmith's: <em>"Reverse engineering GitHub Actions cache to make it fast."</em></p>
+    <p>Why would two startups burn engineering on the same undocumented protocol? Because GitHub's hosted runners get roughly <strong>1 Gbps of network throughput — about 125 MB/s</strong> — and on a fresh runner, restoring the cache is the long pole of the entire build. The throttle <em>is</em> the bottleneck. When your cache restore dominates wall-clock time, <strong>warmth becomes the product.</strong> So an entire cottage industry formed to sell it back to you, faster, by routing around the cache that GitHub never meant you to see.</p>
 
-    <h2>crabbox: the diff goes somewhere else to run</h2>
-    <p><a href="https://github.com/openclaw/crabbox">Crabbox</a> describes itself in seven words: <strong>warm a box, sync the diff, run the suite.</strong> It's a control plane for remote test and command execution — for maintainers, and increasingly for AI agents that need real compute and reviewable evidence instead of ephemeral terminal scrollback.</p>
-    <p>The workflow is <code>lease → sync → run → release</code>:</p>
-    <pre><code><span class="k">crabbox run</span> -- pnpm test          <span class="c"># lease a microVM, sync, run, tear down</span>
-<span class="k">crabbox warmup</span>                    <span class="c"># provision a box and keep it warm</span>
+    <h2>Depot and Blacksmith: warmth, sold as a service</h2>
+    <p>The two reverse-engineering crews built different answers to the same question.</p>
+    <p><strong>Depot</strong> (<a href="https://depot.dev">depot.dev</a>) launches ephemeral, single-tenant EC2 runners via webhook, backs them with a distributed S3 cache, and colocates your BuildKit container builders <em>in the same private network</em> as the runners. Cache moves at up to 1000 MiB/s over 12.5 Gbps — roughly <strong>10x</strong> GitHub's throughput — and the headline claim is <em>up to 55x faster builds at half the cost.</em></p>
+    <p><strong>Blacksmith</strong> (<a href="https://www.blacksmith.sh">blacksmith.sh</a>) — built by three engineers out of CockroachDB and Faire — runs Actions on <strong>bare-metal gaming CPUs</strong> with about <strong>2x the single-thread performance</strong> of GitHub's servers, colocates a warm cache for ~4x faster reads and writes (up to 10x for some), and persists Docker layers on NVMe for <strong>2x–40x</strong> faster image builds. The integration is a one-line change: swap <code>runs-on: ubuntu-latest</code> for <code>runs-on: blacksmith-2vcpu-ubuntu-2404</code>.</p>
+    <p>Above both of them sits the honest meta-truth, and it's exactly what the <a href="https://github.com/zozo123/gha-cache-field-guide">GitHub Actions cache field guide</a> was written to say: <strong>CI caching is not one cache.</strong> Native dependency caches win on warm workspaces. Build caches like Incredibuild win when runners are fresh, ephemeral, or churned by timestamps — strongest for C/C++ and Rust. BuildKit is for Docker; Go and JavaScript usually want their tool-specific cache first. There is no single knob. The field guide's refusal to crown a winner is the correct response to a venue where warmth is contested ground and the right move depends entirely on whether your runner is hot or cold.</p>
+
+    <h2>jj: the diff stops being a verb</h2>
+    <p>So compute and warmth have left the laptop. What about the code itself?</p>
+    <p><a href="https://github.com/jj-vcs/jj">Jujutsu</a> (<code>jj</code>) speaks Git's storage format but discards its mental model. The headline feature sounds like a footnote: <strong>there is no staging area, and your working copy is itself a commit.</strong> <code>jj</code> snapshots the working copy on every command, so the moment you save a file, that change <em>is</em> a commit — it has an ID, it's in the graph.</p>
+    <p>In Git, your dirty checkout is a <em>verb</em>: a thing in motion that you must freeze — <code>add</code>, <code>stash</code>, <code>commit</code> — before you can do anything with it. In jj, the dirty checkout is a <em>noun</em>: a first-class, addressable, syncable object that exists whether or not you've decided you're done. That distinction is the hinge of everything that follows. To ship a diff to a remote machine, the diff first has to <em>be a thing.</em></p>
+
+    <h2>Crabbox: the loop, made local-first again</h2>
+    <p><a href="https://crabbox.sh">Crabbox</a> — by <a href="https://x.com/steipete">Peter Steinberger</a> (<code>@steipete</code>), creator of OpenClaw — is where the pieces snap together. Its tagline: <strong>"A short-lived box for every run."</strong> Its promise, verbatim: <em>"Crabbox gives maintainers and agents a fast local loop on shared cloud capacity: lease, sync, run, release."</em></p>
+    <pre><code><span class="k">crabbox run</span> -- pnpm test          <span class="c"># lease a box, sync your dirty tree, run, tear down</span>
+<span class="k">crabbox warmup</span>                    <span class="c"># provision and keep it warm</span>
 <span class="k">crabbox run</span> --id blue-lobster --  <span class="c"># reuse the warm box</span></code></pre>
-    <p>Under the hood: a Go CLI on your laptop, a Cloudflare Worker broker that owns provider credentials and lease state, and stateless runners that are "leaves: provisioned, used, deleted." It leases ephemeral microVMs from providers like Sprites, E2B, and Firecracker sandboxes.</p>
-    <p>The line that matters is buried in the sync layer: it is <strong>"local-first and does not require a clean checkout."</strong> It seeds remote Git from your base ref, then overlays your dirty files with rsync, skipping no-op syncs via fingerprints. It guards against suspicious mass deletions. It does <em>not</em> ask you to commit first.</p>
-    <p>Read that next to jj. Crabbox treats your dirty working copy as a portable, addressable thing it can ship to a fresh machine — exactly the noun that jj just made it. One project made the diff a first-class object. The other made it the unit of transport.</p>
-
-    <h2>The cache field guide: warm is the whole game</h2>
-    <p>The catch with "run it on a fresh, ephemeral microVM" is that <em>fresh</em> and <em>fast</em> are enemies. A clean runner has no dependency cache, no compiler cache, no warm Docker layers. It is correct and it is slow.</p>
-    <p>The <a href="https://github.com/zozo123/gha-cache-field-guide">GitHub Actions cache field guide</a> is a small, honest answer to that problem, and its thesis is a refusal to oversell: <strong>CI caching is not one cache.</strong> There is no single knob.</p>
-    <ul>
-      <li><strong>Native dependency/build caches</strong> win when the same workspace is already warm.</li>
-      <li><strong>Incredibuild Build Cache</strong> wins when runners are fresh, ephemeral, or invalidated by timestamp churn — strongest for C/C++ and Rust.</li>
-      <li><strong>BuildKit cache</strong> is for Docker.</li>
-      <li>For Go, Docker, and JavaScript, reach for the tool-specific cache first.</li>
-    </ul>
-    <p>It is deliberately <em>not</em> a universal endorsement of anything. The whole point is that the right cache depends on whether your runner is warm or cold — and ephemeral runners are cold by construction.</p>
-    <p>This is the third corner of the same shape. Once the diff detaches from your laptop and runs on disposable compute, <strong>warmth becomes an explicit, separate, networked concern.</strong> It used to be free — it was just whatever your machine had lying around. Now someone has to engineer it, and the honest engineering answer is "it depends, here's the decision tree."</p>
+    <p>You keep your editor and your git workflow; Crabbox <strong>rsyncs your dirty checkout</strong> to a leased remote box — it is "local-first and does not require a clean checkout." It seeds remote Git from your base ref, overlays dirty files, skips no-op syncs by fingerprint, and guards against suspicious mass deletions. It does <em>not</em> ask you to commit first. That's jj's addressable diff, made portable.</p>
+    <p>But here's the move that makes Crabbox more than another runner: <strong>it doesn't compete with Depot and Blacksmith — it targets them.</strong> Crabbox is a control plane with a provider list, and that list reads like a census of this whole essay: <strong>Blacksmith Testbox, E2B, Sprites, Modal, Daytona, Tensorlake, AWS, Hetzner — and <a href="https://islo.dev">islo.dev</a>.</strong> Crabbox 0.3.0 literally shipped a "Blacksmith Testbox wrap." It is the layer that makes all of that disposable cloud compute <em>feel local again.</em></p>
+    <p>And the convergence runs both ways. Blacksmith's own <strong>Testbox</strong> — Linux microVMs that <code>warmup</code> then <code>run</code>, syncing with <code>rsync --delete --checksum</code>, subsequent runs in 1–3 seconds, used to reproduce flaky tests across dozens of boxes in parallel — is the exact same move from the runner vendor's side. Two ends of the market, independently, arrived at: <em>warm a box, sync the diff, run the suite.</em></p>
 
     <h2>The loop, unbundled</h2>
-    <p>Stack the three up and the inner dev loop has come apart into parts that no longer have to live together:</p>
+    <p>Stack it all up and the inner dev loop has come apart into concerns that no longer have to live on the same machine:</p>
     <table>
-      <thead><tr><th>Concern</th><th>Used to be</th><th>Becoming</th></tr></thead>
+      <thead><tr><th>Concern</th><th>Used to be</th><th>Becoming</th><th>Who's building it</th></tr></thead>
       <tbody>
-        <tr><td>Edit</td><td>local file</td><td>local file (still)</td></tr>
-        <tr><td>Version</td><td>freeze the diff first (Git)</td><td>the diff is already an object (jj)</td></tr>
-        <tr><td>Transport</td><td>n/a — it's right here</td><td>sync the diff to compute (crabbox)</td></tr>
-        <tr><td>Compute</td><td>your laptop</td><td>leased ephemeral microVM</td></tr>
-        <tr><td>Warmth</td><td>whatever your disk had</td><td>an engineered cache strategy</td></tr>
+        <tr><td>Edit</td><td>local file</td><td>local file (still)</td><td>you</td></tr>
+        <tr><td>Version</td><td>freeze the diff first</td><td>the diff is already an object</td><td>jj</td></tr>
+        <tr><td>Transport</td><td>n/a — it's right here</td><td>sync the diff to compute</td><td>Crabbox</td></tr>
+        <tr><td>Compute</td><td>your laptop</td><td>leased ephemeral runner</td><td>Depot, Blacksmith</td></tr>
+        <tr><td>Warmth</td><td>whatever your disk had</td><td>engineered cache strategy</td><td>Depot, Blacksmith, field guide</td></tr>
+        <tr><td>Isolation</td><td>none — same OS</td><td>a fresh sandbox per run</td><td>islo.dev, Testbox, E2B</td></tr>
       </tbody>
     </table>
-    <p>None of these projects set out to build that table. jj is fixing Git's ergonomics. Crabbox is giving maintainers cloud compute without the commit dance. The field guide is just trying to make CI honest about caching. But they rhyme, and the rhyme is the future: <strong>the diff is the unit of work, and it's mobile.</strong></p>
-    <p>The accelerant here is agents. An AI coding agent produces dirty diffs at machine speed and has no laptop to run them on. It wants exactly this stack — a diff as a first-class object, a way to ship it to real compute, ephemeral isolation so a bad run can't touch anything, and verifiable evidence at the end instead of terminal output that scrolls away. Crabbox's pitch — "agent-ready observability" — is not a coincidence. It's the loop being rebuilt for a participant that was never sitting at the keyboard.</p>
+    <p>The accelerant under all of it is agents. An AI coding agent produces dirty diffs at machine speed and has no laptop to run them on. It wants precisely this stack: a diff that's already an object, a way to ship it to real compute, ephemeral isolation so a bad run can't touch anything, and <strong>verifiable evidence</strong> at the end instead of terminal output that scrolls away. Crabbox's pitch — "proof for every run," bundling screenshots, video, JUnit summaries, logs, and lease metadata — is not a coincidence. It's the loop being rebuilt for a participant that was never sitting at the keyboard.</p>
 
     <h2>Where this lands</h2>
-    <p>I work on sandboxed runtimes at <a href="https://islo.dev">ISLO</a>, so I'll say the obvious thing the other three projects only imply: once the loop is unbundled, <strong>the sandbox is the substrate everything else sits on.</strong> The diff is mobile, the compute is disposable, and the only question that matters is whether the thing you ship your code into is fast to start, safe by construction, and warm enough to be useful.</p>
-    <p>jj made the diff addressable. Crabbox made it portable. The cache field guide made warmth a first-class decision. The remaining job — give every mobile diff a clean, fast, isolated machine to land on — is the one worth getting right.</p>
+    <p>I work on sandboxed runtimes at <a href="https://islo.dev">islo.dev</a>, and we're already one of the providers in that Crabbox list — so I'll say the thing the rest of the field only implies: once the loop is unbundled, <strong>the sandbox is the substrate everything else sits on.</strong> The diff is mobile, the compute is disposable, the cache is engineered — and the only question left that matters is whether the box your code lands in is fast to start, safe by construction, and warm enough to be useful.</p>
+    <p>That's also where the promise gets honest. "Zero distance between change and knowing" is only true if the box is <em>already warm</em> and <em>already isolated</em> when your diff arrives. Cold boxes break the promise. Shared boxes break it differently. The reason two companies reverse-engineered the same opaque cache is that warmth is the hard part, and the reason Crabbox and Testbox both reinvented <code>warmup → sync → run</code> is that isolation has to be cheap enough to throw away.</p>
+    <p>jj made the diff addressable. Crabbox made it portable. Depot and Blacksmith made it fast. The field guide made warmth honest. The remaining job — give every mobile diff a clean, fast, isolated machine to land on — is the one worth getting right.</p>
     <blockquote>The loop isn't dying. It's just stopped fitting on one desk.</blockquote>
   </div>
 </article>
@@ -176,9 +178,12 @@
     <div>Written June 2026 · <a href="https://islo.dev">islo.dev</a></div>
     <div class="refs">
       <span>References:</span><br/>
-      → <a href="https://github.com/jj-vcs/jj">jj-vcs/jj</a> — Jujutsu VCS<br/>
-      → <a href="https://github.com/openclaw/crabbox">openclaw/crabbox</a> — warm a box, sync the diff, run the suite<br/>
-      → <a href="https://github.com/zozo123/gha-cache-field-guide">zozo123/gha-cache-field-guide</a> — CI caching is not one cache
+      → <a href="https://github.com/jj-vcs/jj">jj-vcs/jj</a> — Jujutsu, the working copy is a commit<br/>
+      → <a href="https://crabbox.sh">crabbox.sh</a> — a short-lived box for every run (Peter Steinberger)<br/>
+      → <a href="https://depot.dev">depot.dev</a> — ephemeral runners, distributed cache, up to 55x<br/>
+      → <a href="https://www.blacksmith.sh">blacksmith.sh</a> — bare-metal runners + Testbox microVMs<br/>
+      → <a href="https://github.com/zozo123/gha-cache-field-guide">gha-cache-field-guide</a> — CI caching is not one cache<br/>
+      → <a href="https://islo.dev">islo.dev</a> — sandboxed runtimes, a Crabbox provider
     </div>
   </div>
 </footer>
