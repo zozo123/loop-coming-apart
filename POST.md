@@ -58,6 +58,14 @@ But here's the move that makes Crabbox more than another runner: **it doesn't co
 
 And the convergence runs both ways. Blacksmith's own **Testbox** — Linux microVMs that `warmup` then `run`, syncing with `rsync --delete --checksum`, subsequent runs in 1–3 seconds, used to reproduce flaky tests across dozens of boxes in parallel — is the exact same move from the runner vendor's side. Two ends of the market, independently, arrived at: *warm a box, sync the diff, run the suite.*
 
+## Haven't we been here before?
+
+Fair question — we have, twice, and it's worth being honest about it. Over the last decade the cloud IDEs (Cloud9, then Gitpod and GitHub Codespaces) tried to lift the loop off the laptop, and Bazel's remote execution and devcontainers tried it for builds. None of them ate the world. The reason is the same for all of them: **they asked you to move in.** Relocate your whole environment to the cloud, give up your local editor and your shell and fifteen years of muscle memory, and trust that the latency won't drive you insane. The switching cost was the headline feature and the fatal flaw.
+
+This wave inverts the deal. You keep the laptop, the editor, the dirty tree, the muscle memory — and ship *only the diff*, on demand, to a box that dies when the command exits. It's **rsync, not relocation.** The commitment is one command, not a migration. That's why both `crabbox run` and `blacksmith testbox` start from "your local checkout, as-is" instead of "first, recreate your world over here."
+
+And there's a demand-side reason it's happening *now* and not in 2016: agents. A coding agent has no laptop to move into and no muscle memory to preserve. It produces dirty diffs at machine speed, needs somewhere isolated to run them where a mistake costs nothing, and needs to leave evidence a human can audit afterward. For the first time the economics point the same direction for the person and the machine — both want a cheap, warm, throwaway box for a single diff. The cloud IDEs were a lifestyle change nobody asked for. A short-lived box per diff is a primitive that, it turns out, everybody needs.
+
 ## The loop, unbundled
 
 Stack it all up and the inner dev loop has come apart into concerns that no longer have to live on the same machine:
@@ -71,7 +79,7 @@ Stack it all up and the inner dev loop has come apart into concerns that no long
 | **Warmth** | whatever your disk had | an engineered cache strategy | Depot, Blacksmith, the field guide |
 | **Isolation** | none — same OS | a fresh sandbox per run | islo.dev, Testbox, E2B |
 
-The accelerant under all of it is agents. An AI coding agent produces dirty diffs at machine speed and has no laptop to run them on. It wants precisely this stack: a diff that's already an object, a way to ship it to real compute, ephemeral isolation so a bad run can't touch anything, and **verifiable evidence** at the end instead of terminal output that scrolls away. Crabbox's pitch — "proof for every run," bundling screenshots, video, JUnit summaries, logs, and lease metadata — is not a coincidence. It's the loop being rebuilt for a participant that was never sitting at the keyboard.
+Notice the bottom two rows, because they're the ones that used to be free. **Isolation** was nothing: your code ran as you, on your OS, and "oops" meant a manual cleanup. Once the box is disposable and the runner is shared, isolation stops being optional and becomes the floor. And once an agent is the thing driving the loop, a requirement appears that no human ever needed: **evidence.** Terminal output that scrolls away is fine when a person watched it happen live; it's useless when an agent did. Crabbox's "proof for every run" — screenshots, video, JUnit summaries, logs, lease metadata — is the loop growing a memory, because the participant now closing it can't be trusted to remember.
 
 ## Where this lands
 
