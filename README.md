@@ -1,13 +1,15 @@
 # The Loop Is Coming Apart
 
-A short essay on the future of the dev cycle. [jj](https://github.com/jj-vcs/jj),
-[Crabbox](https://crabbox.sh), [Depot](https://depot.dev), and
-[Blacksmith](https://www.blacksmith.sh) are all making the same promise — *zero
-distance between changing your code and knowing if it works, on compute that
-isn't yours and isn't precious.* The edit-save-run loop is unbundling into
-networked parts, and **the diff is becoming the thing that moves.**
+A short essay by Yossi Eliaz on how the edit-build-run loop is splitting across tools and machines.
 
-🔗 **Read it:** [zozo123.github.io/loop-coming-apart](https://zozo123.github.io/loop-coming-apart/)
+**Read it:** [zozo123.github.io/loop-coming-apart](https://zozo123.github.io/loop-coming-apart/)
+
+[jj](https://github.com/jj-vcs/jj), [Crabbox](https://crabbox.sh),
+[Depot](https://depot.dev), and [Blacksmith](https://www.blacksmith.sh) are all
+making the same promise — *zero distance between changing your code and knowing
+if it works, on compute that isn't yours and isn't precious.* The edit-save-run
+loop is unbundling into networked parts, and **the diff is becoming the thing
+that moves.**
 
 ## The argument in one table
 
@@ -23,7 +25,9 @@ networked parts, and **the diff is becoming the thing that moves.**
 ## The tell
 
 Two companies — Depot and Blacksmith — independently *reverse-engineered the
-GitHub Actions cache protocol* and each wrote a blog post about it. When cache
+GitHub Actions cache protocol* and each wrote a blog post about it
+([Depot](https://depot.dev/blog/github-actions-cache),
+[Blacksmith](https://www.blacksmith.sh/blog/cache)). When cache
 restore is the long pole of every fresh-runner build, **warmth becomes the
 product.** That's the [field guide's](https://github.com/zozo123/gha-cache-field-guide)
 whole point: CI caching is not one cache.

@@ -1,17 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Loop Is Coming Apart — jj, Crabbox, Depot, Blacksmith and the unbundled dev cycle</title>
-<meta name="description" content="A quiet contest over the inner dev loop. jj, Crabbox, Depot, and Blacksmith all make the same promise: zero distance between changing code and knowing if it works, on compute that isn't yours. The diff is the unit of work, and it's mobile." />
-<meta property="og:title" content="The Loop Is Coming Apart" />
-<meta property="og:description" content="jj, Crabbox, Depot, Blacksmith — the dev loop is unbundling, and the diff is the unit that moves." />
-<meta property="og:type" content="article" />
-<meta name="theme-color" content="#0c0d10" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Loop Is Coming Apart · Yossi Eliaz</title>
+<meta name="description" content="Essay by Yossi Eliaz on how jj, Crabbox, Depot, and Blacksmith are unbundling the inner dev loop onto disposable remote compute.">
+<meta name="author" content="Yossi Eliaz">
+<link rel="canonical" href="https://zozo123.github.io/loop-coming-apart/">
+<meta property="og:title" content="The Loop Is Coming Apart">
+<meta property="og:description" content="jj, Crabbox, Depot, Blacksmith — the dev loop is unbundling, and the diff is the unit that moves.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zozo123.github.io/loop-coming-apart/">
+<meta property="og:image" content="https://zozo123.github.io/loop-coming-apart/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Loop Is Coming Apart — essay by Yossi Eliaz, June 2026">
+<meta property="article:author" content="Yossi Eliaz">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Loop Is Coming Apart">
+<meta name="twitter:description" content="jj, Crabbox, Depot, Blacksmith — the dev loop is unbundling, and the diff is the unit that moves.">
+<meta name="twitter:image" content="https://zozo123.github.io/loop-coming-apart/og.png">
+<meta name="theme-color" content="#0c0d10">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "The Loop Is Coming Apart",
+  "description": "How jj, Crabbox, Depot, and Blacksmith are unbundling the inner dev loop onto disposable remote compute.",
+  "url": "https://zozo123.github.io/loop-coming-apart/",
+  "mainEntityOfPage": "https://zozo123.github.io/loop-coming-apart/",
+  "image": "https://zozo123.github.io/loop-coming-apart/og.png",
+  "datePublished": "2026-06-04",
+  "dateModified": "2026-10-22",
+  "inLanguage": "en",
+  "author": {
+    "@type": "Person",
+    "name": "Yossi Eliaz",
+    "url": "https://yossieliaz.netlify.app/",
+    "sameAs": ["https://github.com/zozo123", "https://www.linkedin.com/in/yossi-eliaz/"]
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0c0d10; --bg2:#121419; --ink:#e8e6e0; --dim:#9a978f;
@@ -111,7 +143,7 @@
     <p class="kicker"><span class="dot"></span> Field Notes · The Dev Cycle</p>
     <h1>The Loop Is&nbsp;Coming Apart</h1>
     <p class="dek">jj, Crabbox, Depot, Blacksmith — a quiet contest over the inner dev loop. Every player makes the same promise: zero distance between changing your code and knowing if it works, on compute that isn't yours and isn't precious.</p>
-    <p class="byline">By Yossi Eliaz · <a href="https://islo.dev">islo.dev</a> · June 2026</p>
+    <p class="byline">By <a href="https://zozo123.github.io/">Yossi Eliaz</a> · June 2026 · I work on <a href="https://islo.dev">islo.dev</a></p>
   </div>
 </header>
 
@@ -127,14 +159,14 @@
 
     <h2>The venue: GitHub Actions, and the cache nobody could see</h2>
     <p>The contest is happening in CI/CD, because that's where the loop already half-left the laptop. <a href="https://github.com/features/actions">GitHub Actions</a> is the incumbent venue; <a href="https://docs.gitlab.com/ee/ci/">GitLab CI/CD</a> is the other big one. This is the arena. And the contested ground inside it turns out to be the most boring-sounding thing imaginable: <strong>the cache.</strong></p>
-    <p>Here is the detail that gives the whole game away. Two different companies — <a href="https://depot.dev">Depot</a> and <a href="https://www.blacksmith.sh">Blacksmith</a> — independently <strong>reverse-engineered the GitHub Actions cache protocol</strong>, and each wrote a blog post about it with nearly the same title. Depot's: <em>"We reverse-engineered the GitHub Actions cache so you don't have to."</em> Blacksmith's: <em>"Reverse engineering GitHub Actions cache to make it fast."</em></p>
-    <p>Why would two startups burn engineering on the same undocumented protocol? Because GitHub's hosted runners get roughly <strong>1 Gbps of network throughput — about 125 MB/s</strong> — and on a fresh runner, restoring the cache is the long pole of the entire build. The throttle <em>is</em> the bottleneck. When your cache restore dominates wall-clock time, <strong>warmth becomes the product.</strong> So an entire cottage industry formed to sell it back to you, faster, by routing around the cache that GitHub never meant you to see.</p>
+    <p>Here is the detail that gives the whole game away. Two different companies — <a href="https://depot.dev">Depot</a> and <a href="https://www.blacksmith.sh">Blacksmith</a> — independently <strong>reverse-engineered the GitHub Actions cache protocol</strong>, and each wrote a blog post about it with nearly the same title. Depot's: <a href="https://depot.dev/blog/github-actions-cache"><em>"We reverse-engineered the GitHub Actions cache so you don't have to."</em></a> Blacksmith's: <a href="https://www.blacksmith.sh/blog/cache"><em>"Reverse engineering GitHub Actions cache to make it fast."</em></a></p>
+    <p>Why would two startups burn engineering on the same undocumented protocol? Because, as <a href="https://depot.dev/blog/github-actions-cache">Depot's post</a> puts it, GitHub's hosted runners get roughly <strong>1 Gbps of network throughput — about 125 MB/s</strong> — and on a fresh runner, restoring the cache is the long pole of the entire build. The throttle <em>is</em> the bottleneck. When your cache restore dominates wall-clock time, <strong>warmth becomes the product.</strong> So an entire cottage industry formed to sell it back to you, faster, by routing around the cache that GitHub never meant you to see.</p>
 
     <h2>Depot and Blacksmith: warmth, sold as a service</h2>
     <p>The two reverse-engineering crews built different answers to the same question.</p>
-    <p><strong>Depot</strong> (<a href="https://depot.dev">depot.dev</a>) launches ephemeral, single-tenant EC2 runners via webhook, backs them with a distributed S3 cache, and colocates your BuildKit container builders <em>in the same private network</em> as the runners. Cache moves at up to 1000 MiB/s over 12.5 Gbps — roughly <strong>10x</strong> GitHub's throughput — and the headline claim is <em>up to 55x faster builds at half the cost.</em></p>
-    <p><strong>Blacksmith</strong> (<a href="https://www.blacksmith.sh">blacksmith.sh</a>) — built by three engineers out of CockroachDB and Faire — runs Actions on <strong>bare-metal gaming CPUs</strong> with about <strong>2x the single-thread performance</strong> of GitHub's servers, colocates a warm cache for ~4x faster reads and writes (up to 10x for some), and persists Docker layers on NVMe for <strong>2x–40x</strong> faster image builds. The integration is a one-line change: swap <code>runs-on: ubuntu-latest</code> for <code>runs-on: blacksmith-2vcpu-ubuntu-2404</code>.</p>
-    <p>Above both of them sits the honest meta-truth, and it's exactly what the <a href="https://github.com/zozo123/gha-cache-field-guide">GitHub Actions cache field guide</a> was written to say: <strong>CI caching is not one cache.</strong> Native dependency caches win on warm workspaces. Build caches like Incredibuild win when runners are fresh, ephemeral, or churned by timestamps — strongest for C/C++ and Rust. BuildKit is for Docker; Go and JavaScript usually want their tool-specific cache first. There is no single knob. The field guide's refusal to crown a winner is the correct response to a venue where warmth is contested ground and the right move depends entirely on whether your runner is hot or cold.</p>
+    <p><strong>Depot</strong> (<a href="https://depot.dev">depot.dev</a>) launches ephemeral, single-tenant EC2 runners via webhook, backs them with a distributed S3 cache, and colocates your BuildKit container builders <em>in the same private network</em> as the runners. Depot says cache moves at up to 1000 MiB/s over 12.5 Gbps — roughly <strong>10x</strong> GitHub's throughput — and its headline claim is <em>up to 55x faster builds at half the cost.</em></p>
+    <p><strong>Blacksmith</strong> (<a href="https://www.blacksmith.sh">blacksmith.sh</a>) — built by three engineers out of CockroachDB and Faire — runs Actions on <strong>bare-metal gaming CPUs</strong>. Blacksmith says its runners have about <strong>2x the single-thread performance</strong> of GitHub's servers, that its colocated warm cache gives ~4x faster reads and writes (up to 10x for some customers), and that persisting Docker layers on NVMe makes image builds <strong>2x–40x</strong> faster. The integration is a one-line change: swap <code>runs-on: ubuntu-latest</code> for <code>runs-on: blacksmith-2vcpu-ubuntu-2404</code>.</p>
+    <p>Above both of them sits the honest meta-truth, and it's exactly what the <a href="https://github.com/zozo123/gha-cache-field-guide">GitHub Actions cache field guide</a> was written to say: <strong>CI caching is not one cache.</strong> Native dependency caches win on warm workspaces. Build caches like Incredibuild (my employer) win when runners are fresh, ephemeral, or churned by timestamps — strongest for C/C++ and Rust. BuildKit is for Docker; Go and JavaScript usually want their tool-specific cache first. There is no single knob. The field guide's refusal to crown a winner is the correct response to a venue where warmth is contested ground and the right move depends entirely on whether your runner is hot or cold.</p>
 
     <h2>jj: the diff stops being a verb</h2>
     <p>So compute and warmth have left the laptop. What about the code itself?</p>
@@ -180,14 +212,14 @@
 
 <footer>
   <div class="wrap">
-    <div>Written June 2026 · <a href="https://islo.dev">islo.dev</a></div>
+    <div>Written June 2026 by <a href="https://yossieliaz.netlify.app/">Yossi Eliaz</a> · <a href="https://islo.dev">islo.dev</a> · <a href="https://zozo123.github.io/">More writing</a></div>
     <div class="refs">
-      <span>References:</span><br/>
-      → <a href="https://github.com/jj-vcs/jj">jj-vcs/jj</a> — Jujutsu, the working copy is a commit<br/>
-      → <a href="https://crabbox.sh">crabbox.sh</a> — a short-lived box for every run (Peter Steinberger)<br/>
-      → <a href="https://depot.dev">depot.dev</a> — ephemeral runners, distributed cache, up to 55x<br/>
-      → <a href="https://www.blacksmith.sh">blacksmith.sh</a> — bare-metal runners + Testbox microVMs<br/>
-      → <a href="https://github.com/zozo123/gha-cache-field-guide">gha-cache-field-guide</a> — CI caching is not one cache<br/>
+      <span>References:</span><br>
+      → <a href="https://github.com/jj-vcs/jj">jj-vcs/jj</a> — Jujutsu, the working copy is a commit<br>
+      → <a href="https://crabbox.sh">crabbox.sh</a> — a short-lived box for every run (Peter Steinberger)<br>
+      → <a href="https://depot.dev">depot.dev</a> — ephemeral runners, distributed cache, claims up to 55x<br>
+      → <a href="https://www.blacksmith.sh">blacksmith.sh</a> — bare-metal runners + Testbox microVMs<br>
+      → <a href="https://github.com/zozo123/gha-cache-field-guide">gha-cache-field-guide</a> — CI caching is not one cache<br>
       → <a href="https://islo.dev">islo.dev</a> — sandboxed runtimes, a Crabbox provider
     </div>
   </div>

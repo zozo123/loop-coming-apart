@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="warm" cx="960" cy="-63" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff7a45" stop-opacity="0.16"/>
+      <stop offset="0.6" stop-color="#ff7a45" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cool" cx="0" cy="0" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5ad1c7" stop-opacity="0.11"/>
+      <stop offset="0.55" stop-color="#5ad1c7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0c0d10"/>
+  <rect width="1200" height="630" fill="url(#warm)"/>
+  <rect width="1200" height="630" fill="url(#cool)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#ff7a45"/>
+
+  <circle cx="86" cy="113" r="5" fill="#ff7a45"/>
+  <text x="104" y="119" font-family="JetBrains Mono, IBM Plex Mono, Menlo, monospace" font-size="20" letter-spacing="3.6" fill="#5ad1c7">FIELD NOTES · THE DEV CYCLE</text>
+
+  <text font-family="Newsreader, Georgia, serif" font-weight="600" font-size="112" letter-spacing="-2.2" fill="#e8e6e0">
+    <tspan x="80" y="258">The Loop Is</tspan>
+    <tspan x="80" y="370">Coming Apart</tspan>
+  </text>
+
+  <text x="80" y="438" font-family="Newsreader, Georgia, serif" font-size="32" fill="#9a978f">jj, Crabbox, Depot, Blacksmith and the unbundled dev cycle</text>
+
+  <rect x="80" y="500" width="40" height="4" rx="2" fill="#ff7a45"/>
+  <line x1="128" y1="502" x2="1120" y2="502" stroke="#23262e" stroke-width="1"/>
+  <text x="80" y="552" font-family="JetBrains Mono, IBM Plex Mono, Menlo, monospace" font-size="24" fill="#e8e6e0">Yossi Eliaz <tspan fill="#9a978f">· June 2026</tspan></text>
+  <text x="1120" y="552" text-anchor="end" font-family="JetBrains Mono, IBM Plex Mono, Menlo, monospace" font-size="20" fill="#9a978f">zozo123.github.io/loop-coming-apart</text>
+</svg>
